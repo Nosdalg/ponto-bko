@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BKO Ponto - Oficial</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #667eea; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: white; border-radius: 15px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        h2 { text-align: center; margin-bottom: 20px; color: #333; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #764ba2; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+        #videoFeed { transform: scaleX(-1); }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-acao { background: #f0f0f0; color: #333; font-size: 14px; padding: 12px; border: 1px solid #ddd; }
+        .btn-acao.selected { background: #764ba2; color: white; border-color: #764ba2; }
+        .btn-full { grid-column: span 2; }
+        label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 15px; }
+        .checkbox-group { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #eee; }
+        .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; font-size: 14px; color: #444; }
+        .checkbox-item input { width: 18px; height: 18px; margin-right: 10px; }
+        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginArea">
+        <h2>🔒 Login BKO</h2>
+        <input type="text" id="loginUser" placeholder="Usuário">
+        <input type="password" id="loginPass" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+    </div>
+
+    <div id="pontoArea" style="display:none;">
+        <h2>🕐 Registro de Ponto</h2>
+        
+        <select id="userSelect" onchange="validar()">
+            <option value="">Selecione seu nome</option>
+            <option value="Bruno">Bruno</option>
+            <option value="Thaís">Thaís</option>
+            <option value="Christ Ellen">Christ Ellen</option>
+        </select>
+
+        <label>Selecione a Ação:</label>
+        <div class="action-grid">
+            <button class="btn-acao" onclick="setAcao(this, 'Entrada')">Entrada</button>
+            <button class="btn-acao" onclick="setAcao(this, 'Saída')">Saída</button>
+            <button class="btn-acao" onclick="setAcao(this, 'Saída Almoço')">Saída Almoço</button>
+            <button class="btn-acao" onclick="setAcao(this, 'Retorno Almoço')">Retorno Almoço</button>
+            <button class="btn-acao btn-full" onclick="setAcao(this, 'Atualização')">🔄 Atualização de Tarefas</button>
+        </div>
+
+        <div id="cameraContainer" style="display:none;">
+            <video id="videoFeed" autoplay playsinline></video>
+            <img id="photoPreview">
+            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Capturar Foto Obrigatória</button>
+        </div>
+
+        <label>Atividades realizadas:</label>
+        <div class="checkbox-group">
+            <label class="checkbox-item">
+                <input type="checkbox" class="ativ-check" value="Atualização de planilhas concluída"> Atualização de planilhas concluída
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" class="ativ-check" value="Pastas do Drive organizadas"> Pastas do Drive organizadas
+            </label>
+        </div>
+
+        <label>Observação (Opcional):</label>
+        <textarea id="observacao" placeholder="Alguma observação importante?" oninput="validar()"></textarea>
+        
+        <button id="btnEnviar" onclick="enviar()" disabled>REGISTRAR AGORA</button>
+        <p id="statusMsg"></p>
+    </div>
+</div>
+
+<script>
+    const CONFIG = {
+        SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz4vXakdBAtbpo_ABoERa-6NmqfmYNAvvo6VjXu8So6y5fWAIt1BYrdZ-PPKuVZdSrKDA/exec',
+        LOGIN_USER: 'Mega',
+        LOGIN_PASS: 'Fibra'
+    };
+
+    let acao = ""; let foto = ""; let localCoords = "";
+
+    function login() {
+        const u = document.getElementById('loginUser').value;
+        const p = document.getElementById('loginPass').value;
+        if(u === CONFIG.LOGIN_USER && p === CONFIG.LOGIN_PASS) {
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('pontoArea').style.display = 'block';
+        } else {
+            alert("Usuário ou senha inválidos.");
+        }
+    }
+
+    function buscarGPS() {
+        return new Promise((resolve) => {
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    p => resolve(p.coords.latitude + "," + p.coords.longitude),
+                    () => resolve("Localização negada"),
+                    { enableHighAccuracy: true, timeout: 7000 }
+                );
+            } else resolve("GPS não suportado");
+        });
+    }
+
+    async function setAcao(btn, val) {
+        document.querySelectorAll('.btn-acao').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        acao = val;
+        
+        const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
+        
+        if (precisaFoto) {
+            document.getElementById('cameraContainer').style.display = 'block';
+            document.getElementById('videoFeed').style.display = 'block';
+            document.getElementById('photoPreview').style.display = 'none';
+            foto = "";
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('videoFeed').srcObject = stream;
+            } catch (e) { alert("Câmera não permitida."); }
+        } else {
+            document.getElementById('cameraContainer').style.display = 'none';
+            foto = "";
+        }
+        validar();
+    }
+
+    function tirarFoto() {
+        const v = document.getElementById('videoFeed');
+        const canvas = document.createElement('canvas');
+        canvas.width = 400; canvas.height = (v.videoHeight / v.videoWidth) * 400;
+        canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+        foto = canvas.toDataURL('image/jpeg', 0.2);
+        document.getElementById('photoPreview').src = foto;
+        document.getElementById('photoPreview').style.display = 'block';
+        v.style.display = 'none';
+        validar();
+    }
+
+    function validar() {
+        const nome = document.getElementById('userSelect').value;
+        const btn = document.getElementById('btnEnviar');
+        const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
+        const fotoOk = precisaFoto ? (foto && foto.includes("base64")) : true;
+        btn.disabled = !(nome && acao && fotoOk);
+    }
+
+    async function enviar() {
+        const btn = document.getElementById('btnEnviar');
+        const status = document.getElementById('statusMsg');
+        
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+        status.style.color = "#333";
+        status.innerText = "Processando registro...";
+
+        // Coleta atividades marcadas
+        let marcadas = [];
+        document.querySelectorAll('.ativ-check:checked').forEach(c => marcadas.push(c.value));
+        
+        // Localização apenas se for Entrada/Saída
+        let localFinal = "N/A";
+        if (acao === 'Entrada' || acao === 'Saída') {
+            status.innerText = "Obtendo GPS...";
+            localFinal = await buscarGPS();
+        }
+
+        const payload = JSON.stringify({
+            nome: document.getElementById('userSelect').value,
+            acao: acao,
+            atividades: marcadas.join(", ") || "Nenhuma marcada",
+            observacao: document.getElementById('observacao').value || "-",
+            local: localFinal,
+            foto: foto
+        });
+
+        try {
+            await fetch(CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: payload
+            });
+            status.style.color = "green";
+            status.innerText = "✅ REGISTRADO COM SUCESSO!";
+            setTimeout(() => location.reload(), 2500);
+        } catch (e) {
+            status.style.color = "red";
+            status.innerText = "❌ Erro ao enviar.";
+            btn.disabled = false;
+            btn.innerText = "REGISTRAR AGORA";
+        }
+    }
+</script>
+
+</body>
+</html>
