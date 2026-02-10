@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BKO Ponto - Oficial</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #667eea; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { background: white; border-radius: 15px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         h2 { text-align: center; margin-bottom: 20px; color: #333; }
@@ -15,7 +15,7 @@
         #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
         #videoFeed { transform: scaleX(-1); }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn-acao { background: #f0f0f0; color: #333; font-size: 14px; padding: 12px; border: 1px solid #ddd; }
+        .btn-acao { background: #f0f0f0; color: #333; font-size: 14px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
         .btn-acao.selected { background: #764ba2; color: white; border-color: #764ba2; }
         .btn-full { grid-column: span 2; }
         label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 15px; }
@@ -23,6 +23,7 @@
         .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; font-size: 14px; color: #444; }
         .checkbox-item input { width: 18px; height: 18px; margin-right: 10px; }
         #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
+        .user-badge { text-align: center; background: #eee; padding: 5px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; font-weight: bold; color: #764ba2; }
     </style>
 </head>
 <body>
@@ -30,21 +31,15 @@
 <div class="container">
     <div id="loginArea">
         <h2>🔒 Login BKO</h2>
-        <input type="text" id="loginUser" placeholder="Usuário">
-        <input type="password" id="loginPass" placeholder="Senha">
+        <input type="text" id="loginUser" placeholder="Seu Login (Ex: TT...)">
+        <input type="password" id="loginPass" placeholder="Sua Senha">
         <button onclick="login()">Entrar</button>
     </div>
 
     <div id="pontoArea" style="display:none;">
+        <div class="user-badge" id="userNameDisplay"></div>
         <h2>🕐 Registro de Ponto</h2>
         
-        <select id="userSelect" onchange="validar()">
-            <option value="">Selecione seu nome</option>
-            <option value="Bruno">Bruno</option>
-            <option value="Thaís">Thaís</option>
-            <option value="Christ Ellen">Christ Ellen</option>
-        </select>
-
         <label>Selecione a Ação:</label>
         <div class="action-grid">
             <button class="btn-acao" onclick="setAcao(this, 'Entrada')">Entrada</button>
@@ -57,21 +52,16 @@
         <div id="cameraContainer" style="display:none;">
             <video id="videoFeed" autoplay playsinline></video>
             <img id="photoPreview">
-            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Capturar Foto Obrigatória</button>
+            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Foto Obrigatória</button>
         </div>
 
         <label>Atividades realizadas:</label>
         <div class="checkbox-group">
-            <label class="checkbox-item">
-                <input type="checkbox" class="ativ-check" value="Atualização de planilhas concluída"> Atualização de planilhas concluída
-            </label>
-            <label class="checkbox-item">
-                <input type="checkbox" class="ativ-check" value="Pastas do Drive organizadas"> Pastas do Drive organizadas
-            </label>
+            <label class="checkbox-item"><input type="checkbox" class="ativ-check" value="Atualização de planilhas"> Atualização de planilhas</label>
+            <label class="checkbox-item"><input type="checkbox" class="ativ-check" value="Pastas organizadas"> Pastas organizadas</label>
         </div>
 
-        <label>Observação (Opcional):</label>
-        <textarea id="observacao" placeholder="Alguma observação importante?" oninput="validar()"></textarea>
+        <textarea id="observacao" placeholder="Observação (Opcional)" oninput="validar()"></textarea>
         
         <button id="btnEnviar" onclick="enviar()" disabled>REGISTRAR AGORA</button>
         <p id="statusMsg"></p>
@@ -80,34 +70,31 @@
 
 <script>
     const CONFIG = {
-        SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz4vXakdBAtbpo_ABoERa-6NmqfmYNAvvo6VjXu8So6y5fWAIt1BYrdZ-PPKuVZdSrKDA/exec',
-        LOGIN_USER: 'Mega',
-        LOGIN_PASS: 'Fibra'
+        SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz4vXakdBAtbpo_ABoERa-6NmqfmYNAvvo6VjXu8So6y5fWAIt1BYrdZ-PPKuVZdSrKDA/exec'
     };
 
-    let acao = ""; let foto = ""; let localCoords = "";
+    // BANCO DE DADOS DE USUÁRIOS ATUALIZADO
+    const USUARIOS = {
+        "TT762550": { senha: "Mega@26", nome: "Christ Ellen" },
+        "TT728678": { senha: "Mega@26", nome: "Bruno" },
+        "TT750825": { senha: "Mega@26", nome: "Thaís" }
+    };
+
+    let usuarioLogado = ""; 
+    let acao = ""; let foto = "";
 
     function login() {
-        const u = document.getElementById('loginUser').value;
-        const p = document.getElementById('loginPass').value;
-        if(u === CONFIG.LOGIN_USER && p === CONFIG.LOGIN_PASS) {
+        const userCode = document.getElementById('loginUser').value.toUpperCase().trim();
+        const pass = document.getElementById('loginPass').value;
+
+        if (USUARIOS[userCode] && USUARIOS[userCode].senha === pass) {
+            usuarioLogado = USUARIOS[userCode].nome;
+            document.getElementById('userNameDisplay').innerText = "👤 Bem-vindo(a), " + usuarioLogado;
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('pontoArea').style.display = 'block';
         } else {
-            alert("Usuário ou senha inválidos.");
+            alert("Login ou senha incorretos.");
         }
-    }
-
-    function buscarGPS() {
-        return new Promise((resolve) => {
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    p => resolve(p.coords.latitude + "," + p.coords.longitude),
-                    () => resolve("Localização negada"),
-                    { enableHighAccuracy: true, timeout: 7000 }
-                );
-            } else resolve("GPS não suportado");
-        });
     }
 
     async function setAcao(btn, val) {
@@ -116,19 +103,16 @@
         acao = val;
         
         const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
+        document.getElementById('cameraContainer').style.display = precisaFoto ? 'block' : 'none';
+        foto = "";
         
         if (precisaFoto) {
-            document.getElementById('cameraContainer').style.display = 'block';
-            document.getElementById('videoFeed').style.display = 'block';
-            document.getElementById('photoPreview').style.display = 'none';
-            foto = "";
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('videoFeed').srcObject = stream;
-            } catch (e) { alert("Câmera não permitida."); }
-        } else {
-            document.getElementById('cameraContainer').style.display = 'none';
-            foto = "";
+                document.getElementById('videoFeed').style.display = 'block';
+                document.getElementById('photoPreview').style.display = 'none';
+            } catch (e) { alert("Câmera bloqueada. Permita o acesso para registrar."); }
         }
         validar();
     }
@@ -138,7 +122,7 @@
         const canvas = document.createElement('canvas');
         canvas.width = 400; canvas.height = (v.videoHeight / v.videoWidth) * 400;
         canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
-        foto = canvas.toDataURL('image/jpeg', 0.2);
+        foto = canvas.toDataURL('image/jpeg', 0.3);
         document.getElementById('photoPreview').src = foto;
         document.getElementById('photoPreview').style.display = 'block';
         v.style.display = 'none';
@@ -146,59 +130,47 @@
     }
 
     function validar() {
-        const nome = document.getElementById('userSelect').value;
         const btn = document.getElementById('btnEnviar');
         const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
-        const fotoOk = precisaFoto ? (foto && foto.includes("base64")) : true;
-        btn.disabled = !(nome && acao && fotoOk);
+        const fotoOk = precisaFoto ? (foto && foto.length > 100) : true;
+        btn.disabled = !(acao && fotoOk);
     }
 
     async function enviar() {
         const btn = document.getElementById('btnEnviar');
         const status = document.getElementById('statusMsg');
-        
         btn.disabled = true;
         btn.innerText = "Enviando...";
-        status.style.color = "#333";
-        status.innerText = "Processando registro...";
 
-        // Coleta atividades marcadas
         let marcadas = [];
         document.querySelectorAll('.ativ-check:checked').forEach(c => marcadas.push(c.value));
-        
-        // Localização apenas se for Entrada/Saída
+
         let localFinal = "N/A";
         if (acao === 'Entrada' || acao === 'Saída') {
-            status.innerText = "Obtendo GPS...";
-            localFinal = await buscarGPS();
+            localFinal = await new Promise(r => {
+                navigator.geolocation.getCurrentPosition(p => r(p.coords.latitude+","+p.coords.longitude), () => r("Recusado"), {timeout: 5000});
+            });
         }
 
         const payload = JSON.stringify({
-            nome: document.getElementById('userSelect').value,
+            nome: usuarioLogado,
             acao: acao,
-            atividades: marcadas.join(", ") || "Nenhuma marcada",
+            atividades: marcadas.join(", ") || "Nenhuma tarefa marcada",
             observacao: document.getElementById('observacao').value || "-",
             local: localFinal,
             foto: foto
         });
 
         try {
-            await fetch(CONFIG.SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: payload
-            });
-            status.style.color = "green";
-            status.innerText = "✅ REGISTRADO COM SUCESSO!";
-            setTimeout(() => location.reload(), 2500);
+            await fetch(CONFIG.SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: payload });
+            status.innerHTML = "<span style='color:green'>✅ REGISTRO REALIZADO!</span>";
+            setTimeout(() => location.reload(), 2000);
         } catch (e) {
-            status.style.color = "red";
-            status.innerText = "❌ Erro ao enviar.";
+            status.innerHTML = "<span style='color:red'>❌ Erro ao enviar</span>";
             btn.disabled = false;
             btn.innerText = "REGISTRAR AGORA";
         }
     }
 </script>
-
 </body>
 </html>
