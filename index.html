@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BKO Ponto - Oficial</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #667eea; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { background: white; border-radius: 15px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         h2 { text-align: center; margin-bottom: 20px; color: #333; }
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #764ba2; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #764ba2; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
         #videoFeed { transform: scaleX(-1); }
@@ -23,7 +23,7 @@
         .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; font-size: 14px; color: #444; }
         .checkbox-item input { width: 18px; height: 18px; margin-right: 10px; }
         #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
-        .user-badge { text-align: center; background: #eee; padding: 5px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; font-weight: bold; color: #764ba2; }
+        .user-badge { text-align: center; background: #e8eaf6; padding: 8px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; font-weight: bold; color: #3f51b5; border: 1px solid #c5cae9; }
     </style>
 </head>
 <body>
@@ -31,7 +31,7 @@
 <div class="container">
     <div id="loginArea">
         <h2>🔒 Login BKO</h2>
-        <input type="text" id="loginUser" placeholder="Seu Login (Ex: TT...)">
+        <input type="text" id="loginUser" placeholder="Seu Login (Ex: TT762...)">
         <input type="password" id="loginPass" placeholder="Sua Senha">
         <button onclick="login()">Entrar</button>
     </div>
@@ -52,7 +52,7 @@
         <div id="cameraContainer" style="display:none;">
             <video id="videoFeed" autoplay playsinline></video>
             <img id="photoPreview">
-            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Foto Obrigatória</button>
+            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Capturar Foto</button>
         </div>
 
         <label>Atividades realizadas:</label>
@@ -61,7 +61,7 @@
             <label class="checkbox-item"><input type="checkbox" class="ativ-check" value="Pastas organizadas"> Pastas organizadas</label>
         </div>
 
-        <textarea id="observacao" placeholder="Observação (Opcional)" oninput="validar()"></textarea>
+        <textarea id="observacao" placeholder="Alguma observação importante? (Opcional)" oninput="validar()"></textarea>
         
         <button id="btnEnviar" onclick="enviar()" disabled>REGISTRAR AGORA</button>
         <p id="statusMsg"></p>
@@ -70,12 +70,13 @@
 
 <script>
     const CONFIG = {
+        // Mantenha sua URL do Google Script aqui
         SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz4vXakdBAtbpo_ABoERa-6NmqfmYNAvvo6VjXu8So6y5fWAIt1BYrdZ-PPKuVZdSrKDA/exec'
     };
 
-    // BANCO DE DADOS DE USUÁRIOS ATUALIZADO
+    // BANCO DE DADOS DE USUÁRIOS
     const USUARIOS = {
-        "TT762550": { senha: "Mega@26", nome: "Christ Ellen" },
+        "TT762550": { senha: "Mega@26", nome: "Christh Ellen" },
         "TT728678": { senha: "Mega@26", nome: "Bruno" },
         "TT750825": { senha: "Mega@26", nome: "Thaís" }
     };
@@ -104,15 +105,23 @@
         
         const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
         document.getElementById('cameraContainer').style.display = precisaFoto ? 'block' : 'none';
+        
+        // Reseta foto ao trocar ação
         foto = "";
+        document.getElementById('photoPreview').style.display = 'none';
         
         if (precisaFoto) {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('videoFeed').srcObject = stream;
                 document.getElementById('videoFeed').style.display = 'block';
-                document.getElementById('photoPreview').style.display = 'none';
-            } catch (e) { alert("Câmera bloqueada. Permita o acesso para registrar."); }
+            } catch (e) { 
+                alert("Erro ao acessar câmera. Verifique as permissões do navegador."); 
+            }
+        } else {
+            // Se não precisa de foto, desativa a câmera se estiver ligada
+            const stream = document.getElementById('videoFeed').srcObject;
+            if(stream) stream.getTracks().forEach(track => track.stop());
         }
         validar();
     }
@@ -120,12 +129,19 @@
     function tirarFoto() {
         const v = document.getElementById('videoFeed');
         const canvas = document.createElement('canvas');
-        canvas.width = 400; canvas.height = (v.videoHeight / v.videoWidth) * 400;
+        canvas.width = 400; 
+        canvas.height = (v.videoHeight / v.videoWidth) * 400;
         canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
-        foto = canvas.toDataURL('image/jpeg', 0.3);
+        
+        foto = canvas.toDataURL('image/jpeg', 0.4); // Qualidade 40% para economizar dados
         document.getElementById('photoPreview').src = foto;
         document.getElementById('photoPreview').style.display = 'block';
         v.style.display = 'none';
+        
+        // Desligar a câmera após a foto para economizar bateria
+        const stream = v.srcObject;
+        if(stream) stream.getTracks().forEach(track => track.stop());
+        
         validar();
     }
 
@@ -139,38 +155,53 @@
     async function enviar() {
         const btn = document.getElementById('btnEnviar');
         const status = document.getElementById('statusMsg');
+        
         btn.disabled = true;
-        btn.innerText = "Enviando...";
+        btn.innerText = "Enviando registro...";
+        status.style.color = "#333";
+        status.innerText = "Processando...";
 
+        // Coleta atividades
         let marcadas = [];
         document.querySelectorAll('.ativ-check:checked').forEach(c => marcadas.push(c.value));
 
+        // Coleta GPS (se necessário)
         let localFinal = "N/A";
         if (acao === 'Entrada' || acao === 'Saída') {
+            status.innerText = "Obtendo localização...";
             localFinal = await new Promise(r => {
-                navigator.geolocation.getCurrentPosition(p => r(p.coords.latitude+","+p.coords.longitude), () => r("Recusado"), {timeout: 5000});
+                navigator.geolocation.getCurrentPosition(
+                    p => r(p.coords.latitude + "," + p.coords.longitude),
+                    () => r("GPS Negado/Desligado"),
+                    { timeout: 5000 }
+                );
             });
         }
 
         const payload = JSON.stringify({
             nome: usuarioLogado,
             acao: acao,
-            atividades: marcadas.join(", ") || "Nenhuma tarefa marcada",
+            atividades: marcadas.join(", ") || "Nenhuma marcada",
             observacao: document.getElementById('observacao').value || "-",
             local: localFinal,
             foto: foto
         });
 
         try {
-            await fetch(CONFIG.SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: payload });
-            status.innerHTML = "<span style='color:green'>✅ REGISTRO REALIZADO!</span>";
-            setTimeout(() => location.reload(), 2000);
+            await fetch(CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: payload
+            });
+            status.innerHTML = "<span style='color:green'>✅ REGISTRO REALIZADO COM SUCESSO!</span>";
+            setTimeout(() => location.reload(), 2500);
         } catch (e) {
-            status.innerHTML = "<span style='color:red'>❌ Erro ao enviar</span>";
+            status.innerHTML = "<span style='color:red'>❌ Erro ao enviar. Tente novamente.</span>";
             btn.disabled = false;
             btn.innerText = "REGISTRAR AGORA";
         }
     }
 </script>
+
 </body>
 </html>
