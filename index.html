@@ -12,7 +12,7 @@
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #764ba2; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+        #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; max-height: 400px; object-fit: contain; }
         #videoFeed { transform: scaleX(-1); }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-acao { background: #f0f0f0; color: #333; font-size: 14px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
@@ -70,11 +70,9 @@
 
 <script>
     const CONFIG = {
-        // Mantenha sua URL do Google Script aqui
         SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz4vXakdBAtbpo_ABoERa-6NmqfmYNAvvo6VjXu8So6y5fWAIt1BYrdZ-PPKuVZdSrKDA/exec'
     };
 
-    // BANCO DE DADOS DE USUÁRIOS
     const USUARIOS = {
         "TT762550": { senha: "Mega@26", nome: "Christh Ellen" },
         "TT728678": { senha: "Mega@26", nome: "Bruno" },
@@ -82,7 +80,8 @@
     };
 
     let usuarioLogado = ""; 
-    let acao = ""; let foto = "";
+    let acao = ""; 
+    let foto = "";
 
     function login() {
         const userCode = document.getElementById('loginUser').value.toUpperCase().trim();
@@ -112,7 +111,16 @@
         
         if (precisaFoto) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                // ✅ Configuração de câmera com resolução mais alta
+                const constraints = {
+                    video: {
+                        facingMode: "user",
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 document.getElementById('videoFeed').srcObject = stream;
                 document.getElementById('videoFeed').style.display = 'block';
             } catch (e) { 
@@ -129,16 +137,32 @@
     function tirarFoto() {
         const v = document.getElementById('videoFeed');
         const canvas = document.createElement('canvas');
-        canvas.width = 400; 
-        canvas.height = (v.videoHeight / v.videoWidth) * 400;
-        canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
         
-        foto = canvas.toDataURL('image/jpeg', 0.4); // Qualidade 40% para economizar dados
-        document.getElementById('photoPreview').src = foto;
-        document.getElementById('photoPreview').style.display = 'block';
+        // ✅ QUALIDADE MÁXIMA: Usa resolução nativa do vídeo
+        canvas.width = v.videoWidth;
+        canvas.height = v.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        // ✅ Espelha a imagem de volta (já que o vídeo está espelhado)
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        
+        // ✅ QUALIDADE 95% (alta qualidade sem ficar muito pesado)
+        foto = canvas.toDataURL('image/jpeg', 0.95);
+        
+        // ✅ Preview em tamanho reduzido (só para visualização)
+        const preview = document.getElementById('photoPreview');
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = 400;
+        previewCanvas.height = (canvas.height / canvas.width) * 400;
+        previewCanvas.getContext('2d').drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+        preview.src = previewCanvas.toDataURL('image/jpeg', 0.8);
+        
+        preview.style.display = 'block';
         v.style.display = 'none';
         
-        // Desligar a câmera após a foto para economizar bateria
+        // Desligar a câmera após a foto
         const stream = v.srcObject;
         if(stream) stream.getTracks().forEach(track => track.stop());
         
