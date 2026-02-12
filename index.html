@@ -3,68 +3,611 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BKO Ponto - Oficial</title>
+    <title>BKO Ponto</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #667eea; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background: white; border-radius: 15px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        h2 { text-align: center; margin-bottom: 20px; color: #333; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #764ba2; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        #videoFeed, #photoPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; max-height: 400px; object-fit: contain; }
-        #videoFeed { transform: scaleX(-1); }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn-acao { background: #f0f0f0; color: #333; font-size: 14px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-acao.selected { background: #764ba2; color: white; border-color: #764ba2; }
-        .btn-full { grid-column: span 2; }
-        label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 15px; }
-        .checkbox-group { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #eee; }
-        .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; font-size: 14px; color: #444; }
-        .checkbox-item input { width: 18px; height: 18px; margin-right: 10px; }
-        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
-        .user-badge { text-align: center; background: #e8eaf6; padding: 8px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; font-weight: bold; color: #3f51b5; border: 1px solid #c5cae9; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #000000;
+            --primary-dark: #1a1a1a;
+            --secondary: #86868b;
+            --accent: #0a84ff;
+            --accent-light: #e5f0ff;
+            --surface: #ffffff;
+            --surface-secondary: #f5f5f7;
+            --border: #d2d2d7;
+            --success: #34c759;
+            --warning: #ff9500;
+            --error: #ff3b30;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-deep: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --radius: 16px;
+            --radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), sans-serif;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-deep);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            padding: 28px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .content {
+            padding: 32px 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 18px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--primary);
+            background: var(--surface);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: var(--secondary);
+            opacity: 1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover:not(:disabled) {
+            background: #0870e3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--surface-secondary);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e8e8ed;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-acao {
+            padding: 16px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+            min-height: 80px;
+        }
+
+        .btn-acao i {
+            font-size: 24px;
+            color: var(--accent);
+        }
+
+        .btn-acao:hover:not(.selected) {
+            background: var(--surface-secondary);
+            border-color: var(--border);
+            transform: translateY(-2px);
+        }
+
+        .btn-acao.selected {
+            background: var(--accent-light);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .btn-acao.selected i {
+            color: var(--accent);
+        }
+
+        .btn-full {
+            grid-column: span 2;
+            min-height: 60px;
+        }
+
+        .camera-container {
+            margin-top: 20px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--surface-secondary);
+            position: relative;
+        }
+
+        #videoFeed, #photoPreview {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            display: block;
+            border-radius: var(--radius);
+        }
+
+        .btn-capture {
+            background: var(--primary);
+            color: white;
+            margin-top: 16px;
+            padding: 16px;
+            font-size: 16px;
+        }
+
+        .btn-capture:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        .checkbox-group {
+            background: var(--surface-secondary);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .checkbox-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-item:hover {
+            background: var(--surface-secondary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--accent);
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .checkbox-item label {
+            font-size: 15px;
+            color: var(--primary);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .status-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .status-success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+
+        .status-error {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+        }
+
+        .status-loading {
+            background: rgba(134, 134, 139, 0.1);
+            color: var(--secondary);
+            border: 1px solid rgba(134, 134, 139, 0.3);
+        }
+
+        .user-card {
+            background: var(--surface-secondary);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, #0870e3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: var(--secondary);
+            font-weight: 400;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        textarea.input-field {
+            min-height: 100px;
+            resize: vertical;
+            padding: 14px 18px;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        #pontoArea {
+            animation: slideIn 0.4s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 24px 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .action-grid {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 16px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loginArea">
-        <h2>🔒 Login BKO</h2>
-        <input type="text" id="loginUser" placeholder="Seu Login (Ex: TT762...)">
-        <input type="password" id="loginPass" placeholder="Sua Senha">
-        <button onclick="login()">Entrar</button>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-clock"></i>
+        </div>
+        <h1>BKO Ponto</h1>
+        <p>Sistema de registro profissional</p>
     </div>
 
-    <div id="pontoArea" style="display:none;">
-        <div class="user-badge" id="userNameDisplay"></div>
-        <h2>🕐 Registro de Ponto</h2>
-        
-        <label>Selecione a Ação:</label>
-        <div class="action-grid">
-            <button class="btn-acao" onclick="setAcao(this, 'Entrada')">Entrada</button>
-            <button class="btn-acao" onclick="setAcao(this, 'Saída')">Saída</button>
-            <button class="btn-acao" onclick="setAcao(this, 'Saída Almoço')">Saída Almoço</button>
-            <button class="btn-acao" onclick="setAcao(this, 'Retorno Almoço')">Retorno Almoço</button>
-            <button class="btn-acao btn-full" onclick="setAcao(this, 'Atualização')">🔄 Atualização de Tarefas</button>
+    <div class="content">
+        <div id="loginArea">
+            <div class="input-group">
+                <label for="loginUser">Código de Acesso</label>
+                <input type="text" id="loginUser" class="input-field" placeholder="Ex: TT762550" autocomplete="username">
+            </div>
+
+            <div class="input-group">
+                <label for="loginPass">Senha</label>
+                <input type="password" id="loginPass" class="input-field" placeholder="••••••••" autocomplete="current-password">
+            </div>
+
+            <button class="btn btn-primary" onclick="login()">
+                <i class="fas fa-sign-in-alt btn-icon"></i>
+                Acessar Sistema
+            </button>
         </div>
 
-        <div id="cameraContainer" style="display:none;">
-            <video id="videoFeed" autoplay playsinline></video>
-            <img id="photoPreview">
-            <button type="button" id="btnFoto" style="background:#444;" onclick="tirarFoto()">📸 Capturar Foto</button>
-        </div>
+        <div id="pontoArea" style="display:none;">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="user-info">
+                    <h3 id="userNameDisplay">Bem-vindo(a)</h3>
+                    <p>Registro de ponto diário</p>
+                </div>
+            </div>
 
-        <label>Atividades realizadas:</label>
-        <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" class="ativ-check" value="Atualização de planilhas"> Atualização de planilhas</label>
-            <label class="checkbox-item"><input type="checkbox" class="ativ-check" value="Pastas organizadas"> Pastas organizadas</label>
-        </div>
+            <div class="section-title">
+                <i class="fas fa-tasks"></i>
+                Selecione a Ação
+            </div>
 
-        <textarea id="observacao" placeholder="Alguma observação importante? (Opcional)" oninput="validar()"></textarea>
-        
-        <button id="btnEnviar" onclick="enviar()" disabled>REGISTRAR AGORA</button>
-        <p id="statusMsg"></p>
+            <div class="action-grid">
+                <button class="btn-acao" onclick="setAcao(this, 'Entrada')">
+                    <i class="fas fa-door-open"></i>
+                    Entrada
+                </button>
+                <button class="btn-acao" onclick="setAcao(this, 'Saída')">
+                    <i class="fas fa-door-closed"></i>
+                    Saída
+                </button>
+                <button class="btn-acao" onclick="setAcao(this, 'Saída Almoço')">
+                    <i class="fas fa-utensils"></i>
+                    Saída Almoço
+                </button>
+                <button class="btn-acao" onclick="setAcao(this, 'Retorno Almoço')">
+                    <i class="fas fa-clipboard-check"></i>
+                    Retorno Almoço
+                </button>
+                <button class="btn-acao btn-full" onclick="setAcao(this, 'Atualização')">
+                    <i class="fas fa-sync-alt"></i>
+                    Atualização de Tarefas
+                </button>
+            </div>
+
+            <div id="cameraContainer" style="display:none;">
+                <div class="camera-container">
+                    <video id="videoFeed" autoplay playsinline></video>
+                    <img id="photoPreview" style="display:none;">
+                </div>
+                <button type="button" class="btn btn-capture" onclick="tirarFoto()">
+                    <i class="fas fa-camera"></i>
+                    Capturar Foto
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">
+                <i class="fas fa-list-check"></i>
+                Atividades Realizadas
+            </div>
+
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" class="ativ-check" id="ativ1" value="Atualização de planilhas">
+                    <label for="ativ1">Atualização de planilhas</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" class="ativ-check" id="ativ2" value="Pastas organizadas">
+                    <label for="ativ2">Pastas organizadas</label>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="observacao">Observações (Opcional)</label>
+                <textarea id="observacao" class="input-field" placeholder="Adicione observações importantes..." oninput="validar()"></textarea>
+            </div>
+
+            <button id="btnEnviar" class="btn btn-accent" onclick="enviar()" disabled>
+                <i class="fas fa-paper-plane btn-icon"></i>
+                Registrar Agora
+            </button>
+
+            <div id="statusMsg" class="status-message" style="display:none;"></div>
+        </div>
     </div>
 </div>
 
@@ -74,9 +617,9 @@
     };
 
     const USUARIOS = {
-        "TT762550": { senha: "Mega@26", nome: "Christh Ellen" },
-        "TT728678": { senha: "Mega@26", nome: "Bruno" },
-        "TT750825": { senha: "Mega@26", nome: "Thaís" }
+        "TT762550": { senha: "Mega@26", nome: "Christh Ellen", avatar: "CE" },
+        "TT728678": { senha: "Mega@26", nome: "Bruno", avatar: "B" },
+        "TT750825": { senha: "Mega@26", nome: "Thaís", avatar: "T" }
     };
 
     let usuarioLogado = ""; 
@@ -89,11 +632,12 @@
 
         if (USUARIOS[userCode] && USUARIOS[userCode].senha === pass) {
             usuarioLogado = USUARIOS[userCode].nome;
-            document.getElementById('userNameDisplay').innerText = "👤 Bem-vindo(a), " + usuarioLogado;
+            document.getElementById('userNameDisplay').innerText = usuarioLogado;
+            document.getElementById('userAvatar').innerText = USUARIOS[userCode].avatar;
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('pontoArea').style.display = 'block';
         } else {
-            alert("Login ou senha incorretos.");
+            mostrarStatus("Credenciais inválidas. Tente novamente.", "error");
         }
     }
 
@@ -105,13 +649,11 @@
         const precisaFoto = (acao === 'Entrada' || acao === 'Saída');
         document.getElementById('cameraContainer').style.display = precisaFoto ? 'block' : 'none';
         
-        // Reseta foto ao trocar ação
         foto = "";
         document.getElementById('photoPreview').style.display = 'none';
         
         if (precisaFoto) {
             try {
-                // ✅ Configuração de câmera com resolução mais alta
                 const constraints = {
                     video: {
                         facingMode: "user",
@@ -124,10 +666,9 @@
                 document.getElementById('videoFeed').srcObject = stream;
                 document.getElementById('videoFeed').style.display = 'block';
             } catch (e) { 
-                alert("Erro ao acessar câmera. Verifique as permissões do navegador."); 
+                mostrarStatus("Erro ao acessar câmera. Verifique as permissões.", "error");
             }
         } else {
-            // Se não precisa de foto, desativa a câmera se estiver ligada
             const stream = document.getElementById('videoFeed').srcObject;
             if(stream) stream.getTracks().forEach(track => track.stop());
         }
@@ -138,20 +679,16 @@
         const v = document.getElementById('videoFeed');
         const canvas = document.createElement('canvas');
         
-        // ✅ QUALIDADE MÁXIMA: Usa resolução nativa do vídeo
         canvas.width = v.videoWidth;
         canvas.height = v.videoHeight;
         
         const ctx = canvas.getContext('2d');
-        // ✅ Espelha a imagem de volta (já que o vídeo está espelhado)
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
         
-        // ✅ QUALIDADE 95% (alta qualidade sem ficar muito pesado)
         foto = canvas.toDataURL('image/jpeg', 0.95);
         
-        // ✅ Preview em tamanho reduzido (só para visualização)
         const preview = document.getElementById('photoPreview');
         const previewCanvas = document.createElement('canvas');
         previewCanvas.width = 400;
@@ -162,7 +699,6 @@
         preview.style.display = 'block';
         v.style.display = 'none';
         
-        // Desligar a câmera após a foto
         const stream = v.srcObject;
         if(stream) stream.getTracks().forEach(track => track.stop());
         
@@ -176,23 +712,44 @@
         btn.disabled = !(acao && fotoOk);
     }
 
+    function mostrarStatus(mensagem, tipo) {
+        const status = document.getElementById('statusMsg');
+        status.innerHTML = mensagem;
+        status.className = 'status-message';
+        
+        if (tipo === 'success') {
+            status.classList.add('status-success');
+        } else if (tipo === 'error') {
+            status.classList.add('status-error');
+        } else {
+            status.classList.add('status-loading');
+        }
+        
+        status.style.display = 'block';
+        
+        if (tipo === 'success') {
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+    }
+
     async function enviar() {
         const btn = document.getElementById('btnEnviar');
         const status = document.getElementById('statusMsg');
         
         btn.disabled = true;
-        btn.innerText = "Enviando registro...";
-        status.style.color = "#333";
-        status.innerText = "Processando...";
+        const btnText = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
+        
+        mostrarStatus("Processando registro...", "loading");
 
-        // Coleta atividades
         let marcadas = [];
         document.querySelectorAll('.ativ-check:checked').forEach(c => marcadas.push(c.value));
 
-        // Coleta GPS (se necessário)
         let localFinal = "N/A";
         if (acao === 'Entrada' || acao === 'Saída') {
-            status.innerText = "Obtendo localização...";
+            mostrarStatus("Obtendo localização...", "loading");
             localFinal = await new Promise(r => {
                 navigator.geolocation.getCurrentPosition(
                     p => r(p.coords.latitude + "," + p.coords.longitude),
@@ -217,12 +774,17 @@
                 mode: 'no-cors',
                 body: payload
             });
-            status.innerHTML = "<span style='color:green'>✅ REGISTRO REALIZADO COM SUCESSO!</span>";
-            setTimeout(() => location.reload(), 2500);
+            
+            mostrarStatus("✅ Registro realizado com sucesso!", "success");
+            btn.innerHTML = '<i class="fas fa-check btn-icon"></i> Sucesso!';
+            
+            setTimeout(() => {
+                location.reload();
+            }, 2500);
         } catch (e) {
-            status.innerHTML = "<span style='color:red'>❌ Erro ao enviar. Tente novamente.</span>";
+            mostrarStatus("❌ Erro ao enviar. Tente novamente.", "error");
             btn.disabled = false;
-            btn.innerText = "REGISTRAR AGORA";
+            btn.innerHTML = btnText;
         }
     }
 </script>
