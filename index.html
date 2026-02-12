@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BKO Ponto</title>
+    <title>MEGAFIBRA Ponto</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -13,14 +13,16 @@
         }
 
         :root {
-            --primary: #000000;
-            --primary-dark: #1a1a1a;
-            --secondary: #86868b;
-            --accent: #0a84ff;
-            --accent-light: #e5f0ff;
-            --surface: #ffffff;
-            --surface-secondary: #f5f5f7;
-            --border: #d2d2d7;
+            /* Cores da MEGAFIBRA */
+            --primary: #006400;          /* Verde escuro */
+            --primary-dark: #004d00;      /* Verde mais escuro */
+            --accent: #00A800;            /* Verde vibrante */
+            --accent-light: #e6f7e6;      /* Verde claro para fundos */
+            --surface: #ffffff;           /* Fundo branco */
+            --surface-secondary: #f9f9f9; /* Fundo cinza claro */
+            --border: #e0e0e0;            /* Borda cinza */
+            --text-primary: #1a1a1a;      /* Texto escuro */
+            --text-secondary: #5a5a5a;    /* Texto secundário */
             --success: #34c759;
             --warning: #ff9500;
             --error: #ff3b30;
@@ -38,13 +40,13 @@
 
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            color: var(--primary);
+            color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -57,55 +59,57 @@
             box-shadow: var(--shadow-deep);
             overflow: hidden;
             position: relative;
+            border: 1px solid var(--border);
         }
 
         .header {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            background: white;
             padding: 28px 24px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            border-bottom: 1px solid var(--border);
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-            animation: pulse 8s ease-in-out infinite;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.2); opacity: 0.5; }
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 600;
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0, 100, 0, 0.2);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
             letter-spacing: -0.5px;
-            margin-bottom: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .header p {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             font-weight: 400;
-        }
-
-        .logo {
-            font-size: 48px;
-            margin-bottom: 16px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            max-width: 300px;
+            margin: 0 auto;
+            line-height: 1.5;
         }
 
         .content {
@@ -120,7 +124,7 @@
             display: block;
             font-size: 13px;
             font-weight: 500;
-            color: var(--secondary);
+            color: var(--text-secondary);
             margin-bottom: 8px;
             letter-spacing: 0.3px;
         }
@@ -132,7 +136,7 @@
             border-radius: var(--radius);
             font-size: 16px;
             font-weight: 400;
-            color: var(--primary);
+            color: var(--text-primary);
             background: var(--surface);
             transition: var(--transition);
             outline: none;
@@ -140,11 +144,11 @@
 
         .input-field:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 168, 0, 0.1);
         }
 
         .input-field::placeholder {
-            color: var(--secondary);
+            color: var(--text-secondary);
             opacity: 1;
         }
 
@@ -172,7 +176,7 @@
         .btn-primary:hover:not(:disabled) {
             background: var(--primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 100, 0, 0.25);
         }
 
         .btn-primary:active:not(:disabled) {
@@ -185,14 +189,14 @@
         }
 
         .btn-accent:hover:not(:disabled) {
-            background: #0870e3;
+            background: #008c00;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 168, 0, 0.3);
         }
 
         .btn-secondary {
             background: var(--surface-secondary);
-            color: var(--primary);
+            color: var(--text-primary);
             border: 1px solid var(--border);
         }
 
@@ -225,7 +229,7 @@
             border-radius: var(--radius);
             border: 1px solid var(--border);
             background: var(--surface);
-            color: var(--primary);
+            color: var(--text-primary);
             cursor: pointer;
             transition: var(--transition);
             display: flex;
@@ -252,7 +256,7 @@
             background: var(--accent-light);
             border-color: var(--accent);
             color: var(--accent);
-            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 168, 0, 0.2);
             transform: scale(1.02);
         }
 
@@ -333,7 +337,7 @@
 
         .checkbox-item label {
             font-size: 15px;
-            color: var(--primary);
+            color: var(--text-primary);
             cursor: pointer;
             flex: 1;
         }
@@ -361,7 +365,7 @@
 
         .status-loading {
             background: rgba(134, 134, 139, 0.1);
-            color: var(--secondary);
+            color: var(--text-secondary);
             border: 1px solid rgba(134, 134, 139, 0.3);
         }
 
@@ -380,7 +384,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent) 0%, #0870e3 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -392,13 +396,13 @@
         .user-info h3 {
             font-size: 16px;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--text-primary);
             margin-bottom: 2px;
         }
 
         .user-info p {
             font-size: 13px;
-            color: var(--secondary);
+            color: var(--text-secondary);
             font-weight: 400;
         }
 
@@ -411,7 +415,7 @@
         .section-title {
             font-size: 15px;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--text-primary);
             margin-bottom: 16px;
             display: flex;
             align-items: center;
@@ -505,11 +509,13 @@
 
 <div class="container">
     <div class="header">
-        <div class="logo">
-            <i class="fas fa-clock"></i>
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="logo-text">MEGAFIBRA</div>
         </div>
-        <h1>BKO Ponto</h1>
-        <p>Sistema de registro profissional</p>
+        <p>Sistema de registro profissional para colaboradores</p>
     </div>
 
     <div class="content">
